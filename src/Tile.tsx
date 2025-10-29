@@ -1,14 +1,16 @@
+import type {tileValue} from "./BoardInterface.ts";
+
 interface TileProps {
+    value: tileValue,
     isCovered: boolean,
     isFlagged: boolean,
     onClick: () => void,
-    onContextmenu: () => void,
 }
 
 function Tile(props: TileProps) {
     return (
-        <button>
-
+        <button onClick={props.onClick}>
+            {props.isCovered ? "H" : props.value}
         </button>
     )
 }

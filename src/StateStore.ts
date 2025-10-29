@@ -1,106 +1,79 @@
 import {create} from 'zustand'
+import type {tileValue} from "./BoardInterface.ts";
+import Board from "./BoardInterface.ts";
+import type {BoardInterface} from "./BoardInterface.ts";
 
-type tileValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "M"
 type difficulty = "easy" | "medium" | "hard"
 
-interface tileData {
-    value: tileValue,
-    isCovered: boolean,
-    isFlagged: boolean,
-    numberOfNearbyFlags: number,
-}
-
-interface MineStore {
-    board: tileData[]
-    boardDimX: number,
-    boardDimY: number,
+export interface MineStore {
     uncoveredTilesRemaining: number,
     tilesNotFlagged: number,
-    getTileIndex: (x: number, y: number) => number,
-    uncoverTile: (x: number, y: number) => void,
-    uncoverTilesWithRightClick: (x: number, y: number) => void,
-    initializeBoard: (x: number, y: number) => void,
+    setGameValues: (uncoveredTilesRemaining_: number, tilesNotFlagged_: number) => void,
+    placeMines: (totalSquares: number, numMines: number) => void,
     initializeGame: (level: difficulty) => void,
 }
 
-const useStore = create<MineStore>()((set, get) => ({
-    boardDimX: 16,
-    boardDimY: 16,
-    board: [],
-    uncoveredTilesRemaining: 100,
-    tilesNotFlagged: 40,
-    getTileIndex: (x: number, y: number) => {
-        if(x < 0 || y < 0 || x >= get().boardDimX || y >= get().boardDimY) {
-            return -1
-        }
-        return y * get().boardDimX + x
+const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
+    ...Board(set, get , s_),
+    uncoveredTilesRemaining: 71,
+    tilesNotFlagged: 10,
+    setGameValues: (uncoveredTilesRemaining_: number, tilesNotFlagged_: number) => {
+        set(() => ({uncoveredTilesRemaining: uncoveredTilesRemaining_, tilesNotFlagged: tilesNotFlagged_}));
     },
-    uncoverTile: (x: number, y: number) => set((state) => {
-        return ({
-            board: state.board.map((tile: tileData, index: number) => {
-                if (index === state.getTileIndex(x, y)) {
-                    tile.isCovered = false
-                }
-                return tile
-            })
-        });
-    }),
-    uncoverTilesWithRightClick: (x: number, y: number) => get().uncoverTile(x, y),
-    initializeBoard: (x: number, y: number) => null,
-    initializeGame: (level: difficulty) => {
-        const initialBoard: tileData[] = []
-        let totalSquares = 0
-
-        switch (level) {
-            case "easy":
-                set(() => ({
-                    boardDimX: 9,
-                    boardDimY: 9,
-                    tilesNotFlagged: 10,
-                }));
-                initialBoard.length = 81;
-                totalSquares = 81;
-                break;
-            case "medium":
-                set(() => ({
-                    boardDimX: 16,
-                    boardDimY: 16,
-                    tilesNotFlagged: 40,
-                }));
-                initialBoard.length = 256;
-                totalSquares = 256;
-                break;
-            case "hard":
-                set(() => ({
-                    boardDimX: 30,
-                    boardDimY: 16,
-                    tilesNotFlagged: 99,
-                }));
-                initialBoard.length = 480;
-                totalSquares = 480;
-                break;
-            default:
-        }
-
-        initialBoard.fill({
-            value: 0,
-            isCovered: true,
-            isFlagged: false,
-            numberOfNearbyFlags: 0,
-        })
-
+    placeMines: (totalSquares: number, numMines: number) => {
         const mines: number[] = []
         let new_mine_index: number;
-        for(let i = 0; i < get().tilesNotFlagged; i++) {
-            while(true) {
+        for (let i = 0; i < numMines; i++) {
+            while (true) {
                 new_mine_index = Math.floor(Math.random() * totalSquares)
-                if(!mines.includes(new_mine_index)) {
+                if (!mines.includes(new_mine_index)) {
                     mines.push(new_mine_index);
                     break;
                 }
             }
-            initialBoard[new_mine_index].value = "M"
+            get().setTileValue(new_mine_index, "M")
+            const neighbors: number[] = get().getNeighbors(new_mine_index);
+            for (const n of neighbors) {
+                const val: tileValue = get().getTile(n).value
+                if (typeof val === "number") {
+                    // @ts-expect-error: val + 1 is a tileValue
+                    get().setTileValue(n, val + 1)
+                }
+            }
         }
+    },
+    initializeGame: (level: difficulty) => {
+        let lenX: number;
+        let lenY: number;
+        let totalSquares: number
+        let numMines: number
+
+        switch (level) {
+            case "easy":
+                get().setGameValues(71, 10);
+                lenX = 9;
+                lenY = 9;
+                totalSquares = 81;
+                numMines = 10;
+                break;
+            case "medium":
+                get().setGameValues(216, 40);
+                lenX = 16;
+                lenY = 16;
+                totalSquares = 256;
+                numMines = 40;
+                break;
+            case "hard":
+                get().setGameValues(381, 99);
+                lenX = 30;
+                lenY = 16;
+                totalSquares = 480;
+                numMines = 99;
+                break;
+        }
+
+        get().newBlankBoard(lenX, lenY)
+        get().placeMines(totalSquares, numMines)
     },
 }))
 
