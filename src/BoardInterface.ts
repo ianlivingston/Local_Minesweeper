@@ -18,12 +18,14 @@ export interface BoardInterface {
     totalTiles: number,
     setTileIsCovered: (i: number, isCovered_: boolean) => void,
     setTileValue: (i: number, value: tileValue) => void,
+    setTileIsFlagged: (i: number, newIsFlagged: boolean) => void,
     setTile: (i: number, tile: tileData) => void,
     getTile: (i: number) => tileData,
     getNeighbors: (i: number) => number[],
     setBoard: (newBoard: tileData[]) => void,
     setBoardDims: (x: number, y: number) => void,
     newBlankBoard: (x: number, y: number) => void,
+    showAll: () => void,
 }
 
 const Board: StateCreator<BoardInterface, [], [], BoardInterface> = (set, get) => {
@@ -81,6 +83,16 @@ const Board: StateCreator<BoardInterface, [], [], BoardInterface> = (set, get) =
                 })
             });
         }),
+        setTileIsFlagged: (i: number, newIsFlagged: boolean) => set((state) => {
+            return ({
+                board: state.board.map((tile: tileData, index: number) => {
+                    if (index === i) {
+                        tile.isFlagged = newIsFlagged
+                    }
+                    return tile
+                })
+            });
+        }),
         setBoardDims: (x: number, y: number): void => set(() => ({boardDimX: x, boardDimY: y, totalTiles: x * y})),
         newBlankBoard: (x: number, y: number) => {
             get().setBoardDims(x, y)
@@ -94,6 +106,15 @@ const Board: StateCreator<BoardInterface, [], [], BoardInterface> = (set, get) =
                     }))
             }))
         },
+        showAll: () => {
+            console.log("showAll")
+            set((state) => ({
+                board: state.board.map((tile: tileData) => {
+                    tile.isCovered = false
+                    return tile
+                })
+            }))
+        }
     });
 }
 

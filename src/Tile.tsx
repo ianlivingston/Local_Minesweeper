@@ -5,12 +5,17 @@ interface TileProps {
     isCovered: boolean,
     isFlagged: boolean,
     onClick: () => void,
+    onContextMenu: (e: React.MouseEvent) => void,
 }
 
 function Tile(props: TileProps) {
+    let marker: string | number
+    if(props.isCovered) marker = props.isFlagged ? "F" : ""
+    else marker = props.value
+
     return (
-        <button onClick={props.onClick}>
-            {props.isCovered ? "H" : props.value}
+        <button className="MineCell" onClick={props.onClick} onContextMenu={props.onContextMenu}>
+            {marker}
         </button>
     )
 }

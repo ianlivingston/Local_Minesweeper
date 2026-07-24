@@ -1,9 +1,8 @@
 import {create} from 'zustand'
-import type {tileValue} from "./BoardInterface.ts";
+import type {tileValue, tileData, BoardInterface} from "./BoardInterface.ts";
 import Board from "./BoardInterface.ts";
-import type {BoardInterface} from "./BoardInterface.ts";
 
-type difficulty = "easy" | "medium" | "hard"
+export type difficulty = "Easy" | "Medium" | "Hard"
 
 export interface MineStore {
     uncoveredTilesRemaining: number,
@@ -11,6 +10,7 @@ export interface MineStore {
     setGameValues: (uncoveredTilesRemaining_: number, tilesNotFlagged_: number) => void,
     placeMines: (totalSquares: number, numMines: number) => void,
     initializeGame: (level: difficulty) => void,
+    uncoverTile: (i: number) => void,
 }
 
 const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
@@ -49,21 +49,21 @@ const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
         let numMines: number
 
         switch (level) {
-            case "easy":
+            case "Easy":
                 get().setGameValues(71, 10);
                 lenX = 9;
                 lenY = 9;
                 totalSquares = 81;
                 numMines = 10;
                 break;
-            case "medium":
+            case "Medium":
                 get().setGameValues(216, 40);
                 lenX = 16;
                 lenY = 16;
                 totalSquares = 256;
                 numMines = 40;
                 break;
-            case "hard":
+            case "Hard":
                 get().setGameValues(381, 99);
                 lenX = 30;
                 lenY = 16;
@@ -75,6 +75,14 @@ const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
         get().newBlankBoard(lenX, lenY)
         get().placeMines(totalSquares, numMines)
     },
+    uncoverTile: (i: number) => {
+        const tile: tileData = get().getTile(i)
+        if (tile.value === "M")
+            get().showAll()
+        else {
+            get().setTileIsCovered(i, false)
+        }
+    }
 }))
 
 export default useStore

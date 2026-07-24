@@ -1,0 +1,27 @@
+body {
+    place-items: center;
+}
+
+ul {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    justify-content: center;
+    list-style-type: none;
+    gap: 0;
+}
+
+.MineCell {
+    margin: 0;
+    min-width: 50px;
+    min-height: 50px;
+}
+
+.MineCell > object {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+select, #startButton {
+    display: block;
+    margin: auto;
+}
