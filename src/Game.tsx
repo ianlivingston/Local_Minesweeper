@@ -1,7 +1,7 @@
 import useStore from './StateStore.ts'
 import Tile from './Tile.tsx'
 import type {difficulty} from "./StateStore.ts"
-import {type ChangeEvent, type MouseEvent, useState} from "react";
+import {type ChangeEvent, type MouseEvent, type CSSProperties, useState} from "react";
 import './Game.css'
 
 function Game() {
@@ -29,7 +29,7 @@ function Game() {
                     Start
                 </button>
             </div>
-            <ul style={{ '--cols': numberOfColumns}}>
+            <ul style={{ '--cols': numberOfColumns } as CSSProperties}>
                 {board.map((tile, index) => (
                     <li key={index}>
                         <Tile
