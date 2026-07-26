@@ -7,6 +7,7 @@ import './Game.css'
 function Game() {
     const board = useStore((state) => state.board)
     const uncoverTile = useStore((state) => state.uncoverTile)
+    const strobe = useStore((state) => state.strobe)
     const init = useStore((state) => state.initializeGame)
     const setFlag = useStore((state) => state.setTileIsFlagged)
     const numberOfColumns = useStore((state) => state.boardDimX)
@@ -36,7 +37,7 @@ function Game() {
                             value={tile.value}
                             isCovered={tile.isCovered}
                             isFlagged={tile.isFlagged}
-                            onClick={() => uncoverTile(index)}
+                            onClick={tile.isCovered ? () => uncoverTile(index) : () => strobe(index)}
                             onContextMenu={(e: MouseEvent) => {
                                 e.preventDefault()
                                 setFlag(index, !tile.isFlagged)

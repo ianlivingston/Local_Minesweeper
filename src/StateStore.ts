@@ -11,6 +11,7 @@ export interface MineStore {
     placeMines: (totalSquares: number, numMines: number) => void,
     initializeGame: (level: difficulty) => void,
     uncoverTile: (i: number) => void,
+    strobe: (i: number) => void,
 }
 
 const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
@@ -77,10 +78,23 @@ const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
     },
     uncoverTile: (i: number) => {
         const tile: tileData = get().getTile(i)
-        if (tile.value === "M")
-            get().showAll()
-        else {
-            get().setTileIsCovered(i, false)
+        if (tile.isCovered && !tile.isFlagged){
+            if (tile.value === "M")
+                get().showAll()
+            else if (tile.value === 0) {
+                console.log(`found 0 at ${i}, strobing`)
+                get().setTileIsCovered(i, false)
+                get().strobe(i)
+            }
+            else
+                get().setTileIsCovered(i, false)
+        }
+    },
+    strobe: (i: number) => {
+        const neighbors: number[] = get().getNeighbors(i)
+        for (const n of neighbors) {
+            console.log(`strobe: ${i}`)
+            get().uncoverTile(n)
         }
     }
 }))
