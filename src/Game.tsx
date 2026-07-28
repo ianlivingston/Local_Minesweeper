@@ -12,7 +12,13 @@ function Game() {
     const setFlag = useStore((state) => state.setTileIsFlagged)
     const numberOfColumns = useStore((state) => state.boardDimX)
 
+    const digitE2 = useStore((state) => state.digitE2)
+    const digitE1 = useStore((state) => state.digitE1)
+    const digitE0 = useStore((state) => state.digitE0)
+    const resetTimer = useStore((state) => state.resetTimer)
+
     const [level, setLevel] = useState<difficulty>("Easy")
+
     const changeLevel = (e: ChangeEvent) => {
         //@ts-expect-error: value isn't on target
         setLevel(e.target.value)
@@ -26,9 +32,15 @@ function Game() {
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
                 </select>
-                <button id="startButton" onClick={() => init(level)}>
+                <button id="startButton" onClick={() => {
+                    init(level)
+                    resetTimer()
+                }}>
                     Start
                 </button>
+                <p>{digitE2}</p>
+                <p>{digitE1}</p>
+                <p>{digitE0}</p>
             </div>
             <ul style={{ '--cols': numberOfColumns } as CSSProperties}>
                 {board.map((tile, index) => (

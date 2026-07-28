@@ -1,8 +1,11 @@
 import {create} from 'zustand'
 import type {tileValue, tileData, BoardInterface} from "./BoardInterface.ts";
 import Board from "./BoardInterface.ts";
+import type {TimerInterface} from "./TimerInterface.ts";
+import Timer from "./TimerInterface.ts";
 
 export type difficulty = "Easy" | "Medium" | "Hard"
+type gameState = "ready" | "playing" | "won" | "lost"
 
 export interface MineStore {
     uncoveredTilesRemaining: number,
@@ -12,12 +15,15 @@ export interface MineStore {
     initializeGame: (level: difficulty) => void,
     uncoverTile: (i: number) => void,
     strobe: (i: number) => void,
+    gameState: gameState,
 }
 
-const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
-    ...Board(set, get , s_),
+const useStore = create<MineStore & BoardInterface & TimerInterface>()((set, get, s_) => ({
+    ...Board(set, get, s_),
+    ...Timer(set, get, s_),
     uncoveredTilesRemaining: 71,
     tilesNotFlagged: 10,
+    gameState: "ready",
     setGameValues: (uncoveredTilesRemaining_: number, tilesNotFlagged_: number) => {
         set(() => ({uncoveredTilesRemaining: uncoveredTilesRemaining_, tilesNotFlagged: tilesNotFlagged_}));
     },
@@ -75,28 +81,35 @@ const useStore = create<MineStore & BoardInterface>()((set, get, s_) => ({
 
         get().newBlankBoard(lenX, lenY)
         get().placeMines(totalSquares, numMines)
+        set(() => ({gameState: "ready"}))
     },
     uncoverTile: (i: number) => {
         const tile: tileData = get().getTile(i)
-        if (tile.isCovered && !tile.isFlagged){
-            if (tile.value === "M")
+        if (tile.isCovered && !tile.isFlagged) {
+            if (tile.value === "M"){
                 get().showAll()
+                get().disableTimer()
+                set(() => ({gameState: "lost"}))
+            }
             else if (tile.value === 0) {
-                console.log(`found 0 at ${i}, strobing`)
+                // console.log(`found 0 at ${i}, strobing`)
                 get().setTileIsCovered(i, false)
                 get().strobe(i)
-            }
-            else
+            } else
                 get().setTileIsCovered(i, false)
+        }
+        if (get().gameState == "ready") {
+            set(() => ({gameState: "playing"}))
+            get().enableTimer()
         }
     },
     strobe: (i: number) => {
         const neighbors: number[] = get().getNeighbors(i)
         for (const n of neighbors) {
-            console.log(`strobe: ${i}`)
+            // console.log(`strobe: ${i}`)
             get().uncoverTile(n)
         }
     }
-}))
+}));
 
 export default useStore
