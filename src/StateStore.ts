@@ -84,29 +84,43 @@ const useStore = create<MineStore & BoardInterface & TimerInterface>()((set, get
         set(() => ({gameState: "ready"}))
     },
     uncoverTile: (i: number) => {
+        const currentState = get().gameState
+        if (currentState === "won" || currentState === "lost") return
+
         const tile: tileData = get().getTile(i)
-        if (tile.isCovered && !tile.isFlagged) {
-            if (tile.value === "M"){
-                get().showAll()
-                get().disableTimer()
-                set(() => ({gameState: "lost"}))
-            }
-            else if (tile.value === 0) {
-                // console.log(`found 0 at ${i}, strobing`)
-                get().setTileIsCovered(i, false)
-                get().strobe(i)
-            } else
-                get().setTileIsCovered(i, false)
-        }
-        if (get().gameState == "ready") {
+        if (!tile.isCovered || tile.isFlagged) return
+
+        if (currentState === "ready") {
             set(() => ({gameState: "playing"}))
             get().enableTimer()
+        }
+
+        if (tile.value === "M") {
+            get().showAll()
+            get().disableTimer()
+            set(() => ({gameState: "lost"}))
+            return
+        }
+
+        if (tile.value === 0) {
+            get().setTileIsCovered(i, false)
+            get().strobe(i)
+        } else {
+            get().setTileIsCovered(i, false)
+        }
+
+        const hasWon = get().board.every((boardTile) =>
+            boardTile.value === "M" || !boardTile.isCovered,
+        )
+        if (hasWon) {
+            get().disableTimer()
+            set(() => ({gameState: "won"}))
         }
     },
     strobe: (i: number) => {
         const neighbors: number[] = get().getNeighbors(i)
         for (const n of neighbors) {
-            // console.log(`strobe: ${i}`)
+            if (get().gameState !== "playing") break
             get().uncoverTile(n)
         }
     }

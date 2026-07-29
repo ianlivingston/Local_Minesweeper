@@ -107,7 +107,7 @@ const Board: StateCreator<BoardInterface, [], [], BoardInterface> = (set, get) =
             }))
         },
         showAll: () => {
-            console.log("showAll")
+            // console.log("showAll")
             set((state) => ({
                 board: state.board.map((tile: tileData) => {
                     tile.isCovered = false
