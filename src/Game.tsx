@@ -5,6 +5,7 @@ import {type ChangeEvent, type MouseEvent, type CSSProperties, useState} from "r
 import trophyUrl from './assets/trophy-winner-prize-svgrepo-com.svg'
 import skullUrl from './assets/skull-crossbones-svgrepo-com.svg'
 import './Game.css'
+import NavBar from "./NavBar.tsx";
 
 function Game() {
     const board = useStore((state) => state.board)
@@ -28,52 +29,55 @@ function Game() {
     }
 
     return (
-        <main className="game">
-            <div id="LevelSelect">
-                <div className="game-controls">
-                    <select onChange={changeLevel} value={level}>
-                        <option value="Easy">Easy</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Hard">Hard</option>
-                    </select>
-                    <button id="startButton" onClick={() => {
-                        init(level)
-                        resetTimer()
-                    }}>
-                        Start
-                    </button>
-                </div>
-                <div className="timer-area">
-                    {gameState === "won" && (
-                        <img src={trophyUrl} alt="You won" className="result-icon" />
-                    )}
-                    {gameState === "lost" && (
-                        <img src={skullUrl} alt="You lost" className="result-icon" />
-                    )}
-                    <div className="timer-display" aria-label="Elapsed time">
-                        <span className="timer-digit">{digitE2}</span>
-                        <span className="timer-digit">{digitE1}</span>
-                        <span className="timer-digit">{digitE0}</span>
+        <>
+            <NavBar />
+            <main className="game">
+                <div id="LevelSelect">
+                    <div className="game-controls">
+                        <select onChange={changeLevel} value={level}>
+                            <option value="Easy">Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                        <button id="startButton" onClick={() => {
+                            init(level)
+                            resetTimer()
+                        }}>
+                            Start
+                        </button>
+                    </div>
+                    <div className="timer-area">
+                        {gameState === "won" && (
+                            <img src={trophyUrl} alt="You won" className="result-icon" />
+                        )}
+                        {gameState === "lost" && (
+                            <img src={skullUrl} alt="You lost" className="result-icon" />
+                        )}
+                        <div className="timer-display" aria-label="Elapsed time">
+                            <span className="timer-digit">{digitE2}</span>
+                            <span className="timer-digit">{digitE1}</span>
+                            <span className="timer-digit">{digitE0}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <ul className="board" style={{ '--cols': numberOfColumns } as CSSProperties}>
-                {board.map((tile, index) => (
-                    <li key={index}>
-                        <Tile
-                            value={tile.value}
-                            isCovered={tile.isCovered}
-                            isFlagged={tile.isFlagged}
-                            onClick={tile.isCovered ? () => uncoverTile(index) : () => strobe(index)}
-                            onContextMenu={(e: MouseEvent) => {
-                                e.preventDefault()
-                                setFlag(index, !tile.isFlagged)
-                            }}
-                        />
-                    </li>
-                ))}
-            </ul>
-        </main>
+                <ul className="board" style={{ '--cols': numberOfColumns } as CSSProperties}>
+                    {board.map((tile, index) => (
+                        <li key={index}>
+                            <Tile
+                                value={tile.value}
+                                isCovered={tile.isCovered}
+                                isFlagged={tile.isFlagged}
+                                onClick={tile.isCovered ? () => uncoverTile(index) : () => strobe(index)}
+                                onContextMenu={(e: MouseEvent) => {
+                                    e.preventDefault()
+                                    setFlag(index, !tile.isFlagged)
+                                }}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </main>
+        </>
     )
 }
 

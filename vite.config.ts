@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        app: './minesweeper.html'
+        app: './index.html'
       }
     }
   }
