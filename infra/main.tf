@@ -24,28 +24,3 @@ variable "region" {
   description = "Sole region used by AWS resources"
   default     = "us-east-1"
 }
-
-locals {
-  buc = "webprojects-website-d21d566a-0667-d8a8-0901-0d7297404c7a"
-}
-
-resource "aws_s3_object" "html" {
-  bucket = local.buc
-  key = "minesweeper.html"
-  source = "../dist/minesweeper.html"
-  content_type = "text/html"
-}
-
-resource "aws_s3_object" "css" {
-  bucket = local.buc
-  key = "minesweeper.css"
-  source = "../dist/assets/app-BS5aiIN-.css"
-  content_type = "text/css"
-}
-
-resource "aws_s3_object" "js" {
-  bucket = local.buc
-  key = "minesweeper.js"
-  source = "../dist/assets/app-cm87zP-h.js"
-  content_type = "text/javascript"
-}

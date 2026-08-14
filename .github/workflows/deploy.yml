@@ -1,0 +1,54 @@
+name: deploy.yml
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  BUCKET: webprojects-website-d21d566a-0667-d8a8-0901-0d7297404c7a
+  DISTRIBUTION: E1TDL38D5H8VTU
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::744456519020:role/website-gh-cd
+          aws-region: us-east-1
+
+      #Terraform Infrastructure
+      - uses: hashicorp/setup-terraform@v4
+      - run: terraform fmt -check -recursive
+      - working-directory: infra
+        run: terraform init -input=false
+      - working-directory: infra
+        run: terraform validate
+      - working-directory: infra
+        run: terraform plan -input=false -lock-timeout=5m -out=tfplan
+      - working-directory: infra
+        run: terraform apply -input=false -lock-timeout=5m -auto-approve tfplan
+
+        #Deploy source code
+      - uses: pnpm/setup@v2
+        with:
+          version: ^11
+          runtime: node@24
+          install: false
+      - run: |
+          pnpm ci
+          pnpm run lint
+          pnpm run build
+      - run: aws s3 sync dist/ s3://$BUCKET/minesweeper/ --delete \
+          --exclude "*.html" \
+          --cache-control "public,max-age=31536000,immutable"
+      - run: aws s3 sync dist/ s3://$BUCKET/minesweeper/ \
+          --exclude "*" --include "*.html" \
+          --cache-control "no-cache"
+      - run: aws cloudfront create-invalidation --distribution-id $DISTRIBUTION --paths "/minesweeper/index.html"
